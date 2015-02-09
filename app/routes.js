@@ -54,6 +54,9 @@ module.exports = function(app, passport) {
 		// render the page and pass in any flash data if it exists
 		res.render('signup.ejs', { message: req.flash('signupMessage') });
 	});
+    app.get('/auth/google',
+         passport.authenticate('google', { scope: 'https://www.google.com/m8/feeds' })
+         );
 
 	// process the signup form
 	app.post('/signup', passport.authenticate('local-signup', {
@@ -61,7 +64,12 @@ module.exports = function(app, passport) {
 		failureRedirect : '/signup', // redirect back to the signup page if there is an error
 		failureFlash : true // allow flash messages
 	}));
-
+    app.get('/auth/google/callback', 
+        passport.authenticate('google', { failureRedirect: '/login' }),
+        function(req, res) {
+    // Successful authentication, redirect home.
+        res.redirect('/');
+  });
 	// =====================================
 	// PROFILE SECTION =========================
 	// =====================================

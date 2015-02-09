@@ -78,17 +78,32 @@ module.exports = function(passport) {
 
     }
 ));
+var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+
+passport.use('google',new GoogleStrategy({
+    clientID: '419932949832-es2h8m4k4vmr97ckqsntd9v1unh7mjoa.apps.googleusercontent.com',
+    clientSecret: 'dSVVSQXKC-pyFS-tQvspYJ8n',
+    callbackURL: "http://localhost:8080/auth/google/callback"
+  },
+  function(accessToken, refreshToken, profile, done) {
+   /* User.findOrCreate({ googleId: profile.id }, function (err, user) {
+      return done(err, user);
+    });*/
+  }
+));
     passport.use(
         'local-signup',
         new LocalStrategy({
+
             // by default, local strategy uses username and password, we will override with email
             usernameField : 'username',
             passwordField : 'password',
             passReqToCallback : true // allows us to pass back the entire request to the callback
         },
-        function(req, username, password, done) {
+        function(req, username, password,done) {
             // find a user whose email is the same as the forms email
             // we are checking to see if the user trying to login already exists
+            console.log(req.body);
             connection.query("SELECT * FROM users WHERE username = ?",[username], function(err, rows) {
                 if (err)
                     return done(err);
@@ -97,14 +112,15 @@ module.exports = function(passport) {
                 } else {
                     // if there is no user with that username
                     // create the user
+                    debugger;
                     var newUserMysql = {
                         username: username,
                         password: bcrypt.hashSync(password, null, null)  // use the generateHash function in our user model
                     };
                     debugger;
-                    var insertQuery = "INSERT INTO users ( username, password ) values (?,?)";
+                    var insertQuery = "INSERT INTO users ( username, password ,college,firstname,lastname) values (?,?,?,?,?)";
 
-                    connection.query(insertQuery,[newUserMysql.username, newUserMysql.password],function(err, rows) {
+                    connection.query(insertQuery,[newUserMysql.username, newUserMysql.password,req.body.college,req.body.firstname,req.body.lastname],function(err, rows) {
                         newUserMysql.id = rows.insertId;
 
                         return done(null, newUserMysql);
