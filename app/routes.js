@@ -3,6 +3,9 @@ var bcrypt = require('bcrypt-nodejs');
 var mysql = require('mysql');
 var dbconfig = require('./database');
 var connection = mysql.createConnection(dbconfig.connection);
+var multer  = require('multer');
+var done=false;
+var fs=require('fs');
 module.exports = function(app, passport) {
 
 	// =====================================
@@ -102,8 +105,67 @@ module.exports = function(app, passport) {
 		user=null;
 		res.redirect('/');
 	});
+	
+
+
+ app.use(multer({ dest: './uploads/',
+ rename: function (fieldname, filename) {
+    return filename+Date.now();
+  },
+onFileUploadStart: function (file) {
+  console.log(file.originalname + ' is starting ...')
+},
+onFileUploadComplete: function (file) {
+ 
+  console.log(file.fieldname + ' uploaded to  ' + file.path)
+  done=true;
+}
+}));
+
+ app.get('/upload',function(req,res){
+fs.readFile('./views/upload.html', function (err, html) {
+    if (err) {
+        throw err; 
+    }  
+    
+      res.writeHeader(200, {"Content-Type": "text/html"});  
+        res.write(html);  
+       
+});
+});
+
+app.post('/api/photo',function(req,res){
+  
+  if(done==true){
+    console.log(req.files);
+    debugger;
+          User.update({
+        _id: user._id
+    }, {
+        $addToSet: {
+            uploads:req.files.userPhoto.name
+        }
+    }, function (err, num, raw) {
+        debugger;
+        if (err) console.log(err + ' num : ' + num + ' raw : ' + raw);
+        else {
+            res.send({
+                result: true,
+                data:raw
+            });
+        }
+    })
+   res.end("File uploaded.");
+  }
+});
+
 };
 
+
+/*Handling routes.*/
+
+
+    
 // route middleware to make sure
 function isLoggedIn(req, res, next) {
 

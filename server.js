@@ -8,7 +8,7 @@ var port     = process.env.PORT || 8080;
 
 var passport = require('passport');
 var flash    = require('connect-flash');
-
+var multer  = require('multer');
 // configuration ===============================================================
 // connect to our database
 
@@ -28,7 +28,7 @@ app.configure(function() {
 	app.use(passport.initialize());
 	app.use(passport.session()); // persistent login sessions
 	app.use(flash()); // use connect-flash for flash messages stored in session
-
+	   
 });
 
 // routes ======================================================================
